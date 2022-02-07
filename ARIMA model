@@ -1,0 +1,55 @@
+# Import libraries 
+#Data manip
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#Libraries required for ARIMA model 
+from statsmodels.tsa.arima_model import ARIMA
+import pmdarima as pm
+
+# Import sales dataset/ Obtained in Kaggle
+df = pd.read_csv('filepath')
+df.dtypes
+
+#Plot demand over time
+fig1 = df.plot(x='Week No.', y='Order_Demand', kind='line', figsize = (20,5))
+fig1
+
+# Auto ARIMA 
+model = pm.auto_arima(df.Order_Demand, start_p=1, start_q=1,
+                      test='adf',       # use adftest to find optimal 'd'
+                      max_p=3, max_q=3, # maximum p and q
+                      m=52,              # frequency of series 52 weeks per year
+                      d=None,           # let model determine 'd'
+                      seasonal=True,   # Seasonality
+                      start_P=0, 
+                      D=1, 
+                      trace=True,
+                      error_action='ignore',  
+                      suppress_warnings=True, 
+                      stepwise=True)
+
+model.summary()
+
+# Forecast
+n_weeks = 100
+fitted, confint = model.predict(n_periods=n_weeks, return_conf_int=True)
+index_of_fc =  np.arange(len(df.Order_Demand), len(df.Order_Demand)+n_weeks)
+
+#Build series 
+fitted_series = pd.Series(fitted, index=index_of_fc)
+lower_series = pd.Series(confint[:, 0], index=index_of_fc)
+upper_series = pd.Series(confint[:, 1], index=index_of_fc)
+
+#Plot data + forecast 
+plt.rcParams["figure.figsize"] = [20, 5]
+plt.plot(df.Order_Demand)
+plt.plot(fitted_series, color='darkgreen')
+plt.fill_between(lower_series.index, 
+                 lower_series, 
+                 upper_series, 
+                 color='k', alpha=.15)
+
+plt.title("ARIMA Forecast")
+plt.show()
