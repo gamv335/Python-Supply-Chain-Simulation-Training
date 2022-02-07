@@ -9,7 +9,8 @@ from statsmodels.tsa.arima_model import ARIMA
 import pmdarima as pm
 
 # Import sales dataset/ Obtained in Kaggle
-df = pd.read_csv('filepath')
+url = 'https://raw.githubusercontent.com/gamv335/Python-Supply-Chain-Simulation-Training/main/Weekly%20demand%201359.csv'
+df = pd.read_csv(url)
 df.dtypes
 
 #Plot demand over time
